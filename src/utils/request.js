@@ -11,6 +11,5 @@ const request = axios.create({
 // 导出请求方法
 export default request
 
-//
-import request from 'request'
+//import request from 'request'
 
