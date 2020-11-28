@@ -112,6 +112,9 @@ export default {
 
         //关闭loading
         this.loginLoading = false
+      //  将接口返回的用户相关数据放到本地存储
+      //  方便应用数据共享
+        window.localStorage.setItem('user',JSON.stringify(res.data.data))
 
 
       //  登录成功，跳转到首页

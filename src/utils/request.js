@@ -8,6 +8,27 @@ import axios from 'axios'
 const request = axios.create({
     baseURL: 'http://ttapi.research.itcast.cn/'
 })
+
+
+//请求拦截器,request.是因为上面创建了实例
+request.interceptors.request.use(
+    //任何所有请求都会经过这里
+    //参数config ：是当前请求相关的配置信息对象
+    //config 是可以修改的
+    function (config) {
+        const user = JSON.parse(window.localStorage.getItem('user'))
+       // 如果有登录用户信息，则统一设置token
+       if (user){
+           config.headers.Authorization =`Bearer ${user.token}`
+       }
+
+    //    这句话很重要
+    return config
+}, function (error) {
+    return Promise.reject(error)
+})
+//响应拦截器
+
 // 导出请求方法
 export default request
 
