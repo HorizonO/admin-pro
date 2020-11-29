@@ -33,7 +33,10 @@
 <!--        </span>-->
           <el-dropdown-menu slot="dropdown">
             <el-dropdown-item>登录</el-dropdown-item>
-            <el-dropdown-item>退出</el-dropdown-item>
+<!-- 组件默认不识别原生事件，除非内部做了处理
+      加上.native,是原生事件修饰符
+-->
+            <el-dropdown-item @click.native="onLogout">退出</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
       </el-header>
@@ -54,7 +57,6 @@
 
 <script>
 import AppAside from  './components/aside'
-import AppHeader from './components/head'
 import { getUserProfile } from "@/api/user";
 
 
@@ -62,7 +64,6 @@ export default {
   name: "LayoutIndex",
   components: {
     AppAside,
-    AppHeader
   },
   props: {},
   data() {
@@ -80,6 +81,26 @@ export default {
         this.user = res.data.data
 
       })
+    },
+    //退出功能
+    onLogout(){
+      this.$confirm('确认退出吗？', '退出提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        window.localStorage.removeItem('user');
+        this.$router.push('/login')
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消'
+        });
+      });
+
+         // 把用户登录状态清除
+
+         // console.log('onLogout')
     }
   },
   created() {
