@@ -12,20 +12,29 @@
       <!--    数据筛选表单-->
       <el-form ref="form" :model="form" label-width="40px" size="mini">
         <el-form-item label="状态">
-          <el-radio-group v-model="form.resource">
-            <el-radio label="全部"></el-radio>
-            <el-radio label="草稿"></el-radio>
-            <el-radio label="待审核"></el-radio>
-            <el-radio label="审核通过"></el-radio>
-            <el-radio label="审核失败"></el-radio>
-            <el-radio label="已删除"></el-radio>
+          <el-radio-group v-model="status">
+            <el-radio :label="null">全部</el-radio>
+            <el-radio :label="0">草稿</el-radio>
+            <el-radio :label="1">待审核</el-radio>
+            <el-radio :label="2">审核通过</el-radio>
+            <el-radio :label="3">审核失败</el-radio>
+            <el-radio :label="4">已删除</el-radio>
           </el-radio-group>
         </el-form-item>
 
         <el-form-item label="频道">
-          <el-select v-model="form.region" placeholder="请选择频道">
-            <el-option label="区域一" value="shanghai"></el-option>
-            <el-option label="区域二" value="beijing"></el-option>
+          <el-select v-model="channelId" placeholder="请选择频道">
+            <el-option
+                label="全部"
+                :value="null"
+
+            ></el-option>
+            <el-option
+                :label="channel.name"
+                :value="channel.id"
+                v-for="(channel,index) in channels"
+                :key="index"
+            ></el-option>
           </el-select>
         </el-form-item>
 
@@ -41,7 +50,12 @@
 
 
         <el-form-item>
-          <el-button type="primary" @click="onSubmit">立即创建</el-button>
+<!--
+    button按钮的click事件有个默认参数
+    当没有指定参数的时候，会默认传递一个没用的数据
+-->
+
+          <el-button type="primary" @click="loadArticles(1)">查询</el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -49,7 +63,7 @@
 
     <el-card class="box-card">
       <div slot="header" class="clearfix">
-        根据筛选条件共查询到 xxx 条数据:
+        根据筛选条件共查询到 {{ totalCount }} 条数据:
       </div>
         <!--    数据列表-->
 <!--      table 表格组件
@@ -148,6 +162,7 @@
 
 <script>
 import { getArticles } from "@/api/article";
+import {getArticleChannels} from "@/api/article";
 
 export default {
   name: "ArticleIndex",
@@ -172,23 +187,31 @@ export default {
         {status:4,text:'已删除',type:'danger'},
       ],
       totalCount:0,  //总数据条数
-      pageSize:20, //每页大小
-      status:null //查询文章的状态，不传就是全部
+      pageSize:10, //每页大小
+      status: null, //查询文章的状态，不传就是全部
+      channels: [],  //文章频道列表
+      channelId:null //查询文章的频道
     }
   },
   created() {
+    this.loadChannels()
     this.loadArticles(1)
   },
   methods: {
-    onSubmit() {
-      console.log('submit!');
+    loadChannels(){
+      getArticleChannels().then(res=>{
+        this.channels = res.data.data.channels
+      })
     },
     //给一个默认值1，不指定page的时候就是显示第一页数据
     loadArticles(page=1){
       getArticles({
         page,
         per_page:this.pageSize,
-        status:this.status
+        status:this.status,
+        channel_id:this.channelId,
+        begin_pubdate: '2019-2-1',  //开始日期
+        end_pubdate: '2020-3-29'   //截止日期
       }).then(res=>{
         const {results,total_count:totalCount} = res.data.data;
         this.articles = results;
