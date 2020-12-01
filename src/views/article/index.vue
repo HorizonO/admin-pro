@@ -40,12 +40,15 @@
 
         <el-form-item label="日期">
           <el-date-picker
-              v-model="form.date1"
+              v-model="rangeDate"
               type="datetimerange"
               start-placeholder="开始日期"
               end-placeholder="结束日期"
-              :default-time="['12:00:00']">
-          </el-date-picker>
+              :default-time="['12:00:00']"
+              format="yyyy-MM-dd"
+              value-format="yyyy-MM-dd"
+          />
+
         </el-form-item>
 
 
@@ -55,7 +58,10 @@
     当没有指定参数的时候，会默认传递一个没用的数据
 -->
 
-          <el-button type="primary" @click="loadArticles(1)">查询</el-button>
+          <el-button type="primary"
+                     :disabled="loading"
+                     @click="loadArticles(1)"
+          >查询</el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -82,6 +88,7 @@
           stripe border
           style="width: 100%"
           class="list-table"
+          v-loading=loading
       >
           <el-table-column
               prop="date"
@@ -136,6 +143,7 @@
                 type="danger"
                 circle
                 icon="el-icon-delete"
+                @click="onDeleteArticle(scope.row.id)"
                 >
             </el-button>
           </template>
@@ -149,6 +157,8 @@
             :total="totalCount"
             @current-change="ouCurrentChange"
             :page-size="pageSize"
+            :disabled="loading"
+            :current-page.sync="page"
         >
         </el-pagination>
         <!--    /列表分页效果-->
@@ -163,6 +173,7 @@
 <script>
 import { getArticles } from "@/api/article";
 import {getArticleChannels} from "@/api/article";
+import { deleteArticle } from "@/api/article";
 
 export default {
   name: "ArticleIndex",
@@ -190,7 +201,10 @@ export default {
       pageSize:10, //每页大小
       status: null, //查询文章的状态，不传就是全部
       channels: [],  //文章频道列表
-      channelId:null //查询文章的频道
+      channelId:null, //查询文章的频道
+      rangeDate: [],  //筛选的范围日期
+      loading:true, //表单数据加载中 loading
+      page:1
     }
   },
   created() {
@@ -205,21 +219,45 @@ export default {
     },
     //给一个默认值1，不指定page的时候就是显示第一页数据
     loadArticles(page=1){
+      // 展示加载中 loading
+      this.loading = true
       getArticles({
         page,
         per_page:this.pageSize,
         status:this.status,
         channel_id:this.channelId,
-        begin_pubdate: '2019-2-1',  //开始日期
-        end_pubdate: '2020-3-29'   //截止日期
+        begin_pubdate: this.rangeDate ? this.rangeDate[0]:null, //开始日期
+        end_pubdate: this.rangeDate ? this.rangeDate[1]:null   //截止日期
       }).then(res=>{
         const {results,total_count:totalCount} = res.data.data;
         this.articles = results;
         this.totalCount = totalCount
+
+      //  关闭加载中loading
+        this.loading = false
       })
     },
     ouCurrentChange(page){
       this.loadArticles(page)
+    },
+    onDeleteArticle(articleId){
+      console.log(articleId)
+      console.log(articleId.toString())
+      this.$confirm('确认删除吗？','删除提示',{
+        confirmButtonText:'确认',
+        cancelButtonText:'取消',
+        type: 'warning'
+      }).then(()=>{
+        deleteArticle(articleId.toString()).then(res=>{
+          this.loadArticles(this.page)
+        })
+      }).catch(()=>{
+        this.$message({
+          type:'info',
+          message:'已取消删除'
+        //  17090086870
+        })
+      })
     }
   },
 
