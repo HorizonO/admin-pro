@@ -141,7 +141,7 @@ export default {
 .login-head {
   width: 300px;
   height: 57px;
-  background: url("./logo_index.png") no-repeat;
+  //background: url("./logo_index.png") no-repeat;
   margin-bottom: 30px;
 }
 
@@ -155,11 +155,12 @@ export default {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background: url("login_bg.jpg") no-repeat;
+  background: url("bg.jpg") no-repeat;
   background-size: cover;
 
   .login-form {
-    background-color: white;
+    //background-color: white;
+    background-color: rgba(255,255,255,0.5);
     padding: 50px;
 
     .login-btn {
